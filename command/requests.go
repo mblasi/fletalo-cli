@@ -43,10 +43,11 @@ var requestsCmd = &cobra.Command{
 }
 
 var lastCmd = &cobra.Command{
-	Use:           "last",
+	Use:           "last [cloud_type] [cloudID]",
 	Short:         "Return last requests",
 	SilenceErrors: true,
 	SilenceUsage:  true,
+	Args:          cobra.MinimumNArgs(2),
 	RunE:          last,
 }
 
@@ -123,7 +124,11 @@ var scheduleRequestCmd = &cobra.Command{
 }
 
 func last(cmd *cobra.Command, args []string) error {
-	url := fmt.Sprintf("%s/clouds/requests/last?since=%s&authorization=%s", getUri(), since, getToken())
+
+	cloudType := args[0]
+	cloudID := args[1]
+
+	url := fmt.Sprintf("%s/clouds/%s/%s/requests?since=%s&authorization=%s", getUri(), cloudType, cloudID, since, getToken())
 	body, err := GET(url, "last requests")
 	if err != nil {
 		return err
@@ -376,7 +381,7 @@ func newRequest(cmd *cobra.Command, args []string) error {
 	sender := args[3]
 	var senderBody map[string]interface{}
 	if sender == "me" {
-		senderBody = map[string]interface{}{"id": me["id"].(string)}
+		senderBody = map[string]interface{}{"id": me["id"].(string), "phone": "n/a"}
 	} else {
 		senderBody = map[string]interface{}{"phone": sender}
 	}
@@ -384,7 +389,7 @@ func newRequest(cmd *cobra.Command, args []string) error {
 	receiver := args[4]
 	var receiverBody map[string]interface{}
 	if receiver == "me" {
-		receiverBody = map[string]interface{}{"id": me["id"].(string)}
+		receiverBody = map[string]interface{}{"id": me["id"].(string), "phone": "n/a"}
 	} else {
 		receiverBody = map[string]interface{}{"phone": receiver}
 	}
